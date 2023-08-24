@@ -1,6 +1,9 @@
+import functions.MyLiveMessageSource;
+import models.LiveMessage;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+import serialization.LiveMessageSchema;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -24,8 +27,8 @@ public class KafkaFlinkApplication {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 
         // DataSource
-        DataStream<String> numbers = env.addSource(new Producer.MyNumberSequenceSource(1000)).setParallelism(1);
-        numbers.sinkTo(Producer.producer(params));
+        DataStream<LiveMessage> numbers = env.addSource(new MyLiveMessageSource(1000)).setParallelism(1);
+        numbers.sinkTo(new Producer<LiveMessage, LiveMessageSchema>().producer(params, "live", new LiveMessageSchema()));
 
         numbers.print();
 
